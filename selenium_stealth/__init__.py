@@ -1,3 +1,5 @@
+from typing import List
+
 from selenium.webdriver import Chrome as Driver
 
 from .chrome_app import chrome_app
@@ -14,6 +16,7 @@ from .utils import with_utils
 from .webgl_vendor import webgl_vendor_override
 from .window_outerdimensions import window_outerdimensions
 from .hairline_fix import hairline_fix
+from .mouse import patch_mouse
 
 """
 If user_agent = None then selenium-stealth only remove the 'headless' from userAgent
@@ -30,13 +33,14 @@ If user_agent = None then selenium-stealth only remove the 'headless' from userA
 
 
 def stealth(driver: Driver, user_agent: str = None,
-            languages: [str] = ["en-US", "en"],
+            languages: List[str] = ["en-US", "en"],
             vendor: str = "Google Inc.",
             platform: str = None,
             webgl_vendor: str = "Intel Inc.",
             renderer: str = "Intel Iris OpenGL Engine",
             fix_hairline: bool = False,
-            run_on_insecure_origins: bool = False, **kwargs) -> None:
+            run_on_insecure_origins: bool = False,
+            draw_mouse: bool = True, **kwargs) -> None:
     # if not isinstance(driver, Driver):
     #     raise ValueError("driver must is selenium.webdriver.Chrome, currently this lib only support Chrome")
 
@@ -55,6 +59,9 @@ def stealth(driver: Driver, user_agent: str = None,
     user_agent_override(driver, user_agent, ua_languages, platform, **kwargs)
     webgl_vendor_override(driver, webgl_vendor, renderer, **kwargs)
     window_outerdimensions(driver, **kwargs)
+
+    if draw_mouse:
+        patch_mouse(driver, **kwargs)
 
     if fix_hairline:
         hairline_fix(driver, **kwargs)
